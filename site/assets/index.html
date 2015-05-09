@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Conjugarden</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+    <script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <script>
+$(function() {
+	var g_quiz = {};
+
+	$("#tab_exercise").hide();
+	$("#tab_query").hide();
+
+    $("#btn_exec").click(function(){
+        $("#tab_exercise").show();
+        $("#tab_main").hide();
+        $("#tab_query").hide();
+		if (g_quiz["1s"] == undefined) load_exec();
+    })
+    $("#btn_main").click(function(){
+        $("#tab_exercise").hide();
+        $("#tab_main").show();
+        $("#tab_query").hide();
+    })
+    $("#btn_query").click(function(){
+        $("#tab_exercise").hide();
+        $("#tab_main").hide();
+        $("#tab_query").show();
+    })
+
+	function load_exec() {
+		$.get("?action=quiz", function(data) {
+			$('#lab_word').text(data["ger"]);
+			$('#lab_meaning').text(data["meaning"]);
+			quizes = data["conj"];
+			g_quiz = quizes[Math.floor(Math.random() * quizes.length)];
+			$('#lab_mood').text(g_quiz["mood"]);
+			$('#lab_tense').text(g_quiz["tense"]);
+			$('#txt_form_1s').attr('readonly', g_quiz["1s"] == "");
+			$('#txt_form_2s').attr('readonly', g_quiz["2s"] == "");
+			$('#txt_form_3s').attr('readonly', g_quiz["3s"] == "");
+			$('#txt_form_1p').attr('readonly', g_quiz["1p"] == "");
+			$('#txt_form_2p').attr('readonly', g_quiz["2p"] == "");
+			$('#txt_form_3p').attr('readonly', g_quiz["3p"] == "");
+		});
+	}
+
+	function deaccent(str) {
+		return str
+			.replace(/[áàãâä]/gi,"a")
+			.replace(/[éè¨ê]/gi,"e")
+			.replace(/[íìïî]/gi,"i")
+			.replace(/[óòöôõ]/gi,"o")
+			.replace(/[úùüû]/gi, "u")
+			.replace(/[ç]/gi, "c")
+			.replace(/[ñ]/gi, "n")
+			.trim();
+	}
+
+	function check_answer(elem, answer) {
+		if (elem.val() == "") return;
+		var correct = deaccent(elem.val()) == deaccent(answer);
+		var after_html = correct
+			? '<span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true"></span>'
+			: '<span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>';
+		elem.after(after_html);
+		elem = elem.parent().parent();
+		elem.addClass("has-feedback");
+		elem.addClass(correct ? "has-success" : "has-error");
+	}
+
+	function clear_mark() {
+		$("span.form-control-feedback").each(function(idx, elem) {
+			$(elem).remove();
+		})
+		$("div.has-feedback").each(function(idx, elem) {
+			$(elem).removeClass("has-feedback");
+			$(elem).removeClass("has-error");
+			$(elem).removeClass("has-success");
+		})
+	}
+
+    $("#btn_clear").click(function(){
+		$('#txt_form_1s').val("");
+		$('#txt_form_2s').val("");
+		$('#txt_form_3s').val("");
+		$('#txt_form_1p').val("");
+		$('#txt_form_2p').val("");
+		$('#txt_form_3p').val("");
+    })
+
+    $("#btn_check").click(function(){
+    	clear_mark();
+		check_answer($('#txt_form_1s'), g_quiz['1s']);
+		check_answer($('#txt_form_2s'), g_quiz['2s']);
+		check_answer($('#txt_form_3s'), g_quiz['3s']);
+		check_answer($('#txt_form_1p'), g_quiz['1p']);
+		check_answer($('#txt_form_2p'), g_quiz['2p']);
+		check_answer($('#txt_form_3p'), g_quiz['3p']);
+    })
+
+    $("#btn_show").click(function(){
+		$('#txt_form_1s').val(g_quiz['1s']);
+		$('#txt_form_2s').val(g_quiz['2s']);
+		$('#txt_form_3s').val(g_quiz['3s']);
+		$('#txt_form_1p').val(g_quiz['1p']);
+		$('#txt_form_2p').val(g_quiz['2p']);
+		$('#txt_form_3p').val(g_quiz['3p']);
+    })
+
+    $("#btn_next").click(function(){
+    	clear_mark();
+		$("#btn_clear").click();
+		load_exec();
+    })
+})
+    </script>
+</head>
+
+<body>
+
+<nav class="navbar navbar-default">
+    <div class="navbar-header">
+        <button data-target="#navbarCollapse" data-toggle="collapse" class="navbar-toggle" type="button">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <a id="btn_main" href="#" class="navbar-brand">Conjugarden</a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+        <ul class="nav navbar-nav">
+            <li><a id="btn_exec" href="#">Exercise</a></li>
+            <li><a id="btn_query" href="#">Query</a></li>
+        </ul>
+    </div>
+</nav>
+
+<div id="tab_main" class="container">
+    <div class="jumbotron">
+        <h1>Conjugarden</h1>
+        Learn Spanish conjugar the <i>easy</i> way.
+    </div>
+</div>
+
+<div id="tab_query" class="container">
+    <div class="panel panel-default">
+        <div class="panel-heading">Query</div>
+        <div class="panel-body">
+            <h1>Coming soon...</h1>
+        </div>
+    </div>
+</div>
+
+<div id="tab_exercise" class="container">
+    <div class="panel panel-default">
+        <div id="lab_word" class="panel-heading">amar</div>
+        <div class="panel-body">
+            <span id="lab_meaning">I love, am loving</span>
+            <span id="lab_mood" class="label label-default">Indicative</span>
+            <span id="lab_tense" class="label label-default">Present</span>
+        </div>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">Exercise</div>
+        <div class="panel-body">
+
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <label for="txt_form_1s" class="col-sm-2 control-label">yo</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="txt_form_1s">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="txt_form_2s" class="col-sm-2 control-label">tú</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="txt_form_2s">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="txt_form_3s" class="col-sm-2 control-label">él/ella/Ud.</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="txt_form_3s">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="txt_form_1p" class="col-sm-2 control-label">nosotros</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="txt_form_1p">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="txt_form_2p" class="col-sm-2 control-label">vosotros</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="txt_form_2p">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="txt_form_3p" class="col-sm-2 control-label">ellos/ellas/Uds.</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="txt_form_3p">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <button type="button" id="btn_check" class="btn btn-default btn-success">Check</button>
+                        <button type="button" id="btn_show" class="btn btn-default">Show</button>
+                        <button type="button" id="btn_clear" class="btn btn-default">Clear</button>
+                        <button type="button" id="btn_next" class="btn btn-default btn-primary">Next</button>
+                    </div>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
