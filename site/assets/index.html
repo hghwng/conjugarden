@@ -9,121 +9,190 @@
     <script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
     <script>
+
+var g_quiz = {};
+var g_data = {};
+
 $(function() {
-	var g_quiz = {};
 
-	$("#tab_exercise").hide();
-	$("#tab_query").hide();
+$("#tab_exercise").hide();
+$("#tab_query").hide();
 
-    $("#btn_exec").click(function(){
-        $("#tab_exercise").show();
-        $("#tab_main").hide();
-        $("#tab_query").hide();
-		if (g_quiz["1s"] == undefined) load_exec();
-    })
-    $("#btn_main").click(function(){
-        $("#tab_exercise").hide();
-        $("#tab_main").show();
-        $("#tab_query").hide();
-    })
-    $("#btn_query").click(function(){
-        $("#tab_exercise").hide();
-        $("#tab_main").hide();
-        $("#tab_query").show();
-    })
-
-	function load_exec() {
-		$.get("?action=quiz", function(data) {
-			$('#lab_word').text(data["ger"]);
-			$('#lab_meaning').text(data["meaning"]);
-			quizes = data["conj"];
-			g_quiz = quizes[Math.floor(Math.random() * quizes.length)];
-			$('#lab_mood').text(g_quiz["mood"]);
-			$('#lab_tense').text(g_quiz["tense"]);
-			$('#txt_form_1s').attr('readonly', g_quiz["1s"] == "");
-			$('#txt_form_2s').attr('readonly', g_quiz["2s"] == "");
-			$('#txt_form_3s').attr('readonly', g_quiz["3s"] == "");
-			$('#txt_form_1p').attr('readonly', g_quiz["1p"] == "");
-			$('#txt_form_2p').attr('readonly', g_quiz["2p"] == "");
-			$('#txt_form_3p').attr('readonly', g_quiz["3p"] == "");
-		});
-	}
-
-	function deaccent(str) {
-		return str
-			.replace(/[áàãâä]/gi,"a")
-			.replace(/[éè¨ê]/gi,"e")
-			.replace(/[íìïî]/gi,"i")
-			.replace(/[óòöôõ]/gi,"o")
-			.replace(/[úùüû]/gi, "u")
-			.replace(/[ç]/gi, "c")
-			.replace(/[ñ]/gi, "n")
-			.trim();
-	}
-
-	function check_answer(elem, answer) {
-		if (elem.val() == "") return;
-		var correct = deaccent(elem.val()) == deaccent(answer);
-		var after_html = correct
-			? '<span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true"></span>'
-			: '<span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>';
-		elem.after(after_html);
-		elem = elem.parent().parent();
-		elem.addClass("has-feedback");
-		elem.addClass(correct ? "has-success" : "has-error");
-	}
-
-	function clear_mark() {
-		$("span.form-control-feedback").each(function(idx, elem) {
-			$(elem).remove();
-		})
-		$("div.has-feedback").each(function(idx, elem) {
-			$(elem).removeClass("has-feedback");
-			$(elem).removeClass("has-error");
-			$(elem).removeClass("has-success");
-		})
-	}
-
-    $("#btn_clear").click(function(){
-		$('#txt_form_1s').val("");
-		$('#txt_form_2s').val("");
-		$('#txt_form_3s').val("");
-		$('#txt_form_1p').val("");
-		$('#txt_form_2p').val("");
-		$('#txt_form_3p').val("");
-    })
-
-    $("#btn_check").click(function(){
-    	clear_mark();
-		check_answer($('#txt_form_1s'), g_quiz['1s']);
-		check_answer($('#txt_form_2s'), g_quiz['2s']);
-		check_answer($('#txt_form_3s'), g_quiz['3s']);
-		check_answer($('#txt_form_1p'), g_quiz['1p']);
-		check_answer($('#txt_form_2p'), g_quiz['2p']);
-		check_answer($('#txt_form_3p'), g_quiz['3p']);
-    })
-
-    $("#btn_show").click(function(){
-		$('#txt_form_1s').val(g_quiz['1s']);
-		$('#txt_form_2s').val(g_quiz['2s']);
-		$('#txt_form_3s').val(g_quiz['3s']);
-		$('#txt_form_1p').val(g_quiz['1p']);
-		$('#txt_form_2p').val(g_quiz['2p']);
-		$('#txt_form_3p').val(g_quiz['3p']);
-    })
-
-    $("#btn_next").click(function(){
-    	clear_mark();
-		$("#btn_clear").click();
-		load_exec();
-    })
+$("#a_exec").click(function() {
+    $("#tab_exercise").show();
+    $("#tab_main").hide();
+    $("#tab_query").hide();
+    if (g_quiz["1s"] == undefined) exercise_load();
 })
+$("#a_main").click(function() {
+    $("#tab_exercise").hide();
+    $("#tab_main").show();
+    $("#tab_query").hide();
+})
+$("#a_query").click(function() {
+    query_load(g_data, true);
+    $('#txt_query').val('');
+    $("#tab_exercise").hide();
+    $("#tab_main").hide();
+    $("#tab_query").show();
+})
+
+function exercise_load() {
+    $.get("?action=quiz", function(data) {
+        g_data = data;
+        $('#lab_word').text(data["word"]);
+        $('#lab_meaning').text(data["meaning"]);
+
+        quizes = data["conj"];
+        g_quiz = quizes[Math.floor(Math.random() * quizes.length)];
+        $('#lab_mood').text(g_quiz["mood"]);
+        $('#lab_tense').text(g_quiz["tense"]);
+        $('#txt_1s').attr('readonly', g_quiz["1s"] == "");
+        $('#txt_2s').attr('readonly', g_quiz["2s"] == "");
+        $('#txt_3s').attr('readonly', g_quiz["3s"] == "");
+        $('#txt_1p').attr('readonly', g_quiz["1p"] == "");
+        $('#txt_2p').attr('readonly', g_quiz["2p"] == "");
+        $('#txt_3p').attr('readonly', g_quiz["3p"] == "");
+    });
+}
+
+function deaccent(str) {
+    return str
+        .replace(/[áàãâä]/gi,"a")
+        .replace(/[éè¨ê]/gi,"e")
+        .replace(/[íìïî]/gi,"i")
+        .replace(/[óòöôõ]/gi,"o")
+        .replace(/[úùüû]/gi, "u")
+        .replace(/[ç]/gi, "c")
+        .replace(/[ñ]/gi, "n")
+        .trim();
+}
+
+function check_answer(elem, answer) {
+    if (elem.val() == "") return;
+    var correct = deaccent(elem.val()) == deaccent(answer);
+    var after_html = correct
+        ? '<span class="glyphicon glyphicon-ok form-control-feedback" aria-hidden="true"></span>'
+        : '<span class="glyphicon glyphicon-remove form-control-feedback" aria-hidden="true"></span>';
+    elem.after(after_html);
+    elem = elem.parent().parent();
+    elem.addClass("has-feedback");
+    elem.addClass(correct ? "has-success" : "has-error");
+}
+
+function clear_mark() {
+    $("span.form-control-feedback").each(function(idx, elem) {
+        $(elem).remove();
+    })
+    $("div.has-feedback").each(function(idx, elem) {
+        $(elem).removeClass("has-feedback");
+        $(elem).removeClass("has-error");
+        $(elem).removeClass("has-success");
+    })
+}
+
+$("#btn_clear").click(function() {
+    $('#txt_1s').val("");
+    $('#txt_2s').val("");
+    $('#txt_3s').val("");
+    $('#txt_1p').val("");
+    $('#txt_2p').val("");
+    $('#txt_3p').val("");
+})
+
+$("#btn_check").click(function() {
+    clear_mark();
+    check_answer($('#txt_1s'), g_quiz['1s']);
+    check_answer($('#txt_2s'), g_quiz['2s']);
+    check_answer($('#txt_3s'), g_quiz['3s']);
+    check_answer($('#txt_1p'), g_quiz['1p']);
+    check_answer($('#txt_2p'), g_quiz['2p']);
+    check_answer($('#txt_3p'), g_quiz['3p']);
+})
+
+$("#btn_show").click(function() {
+    $('#txt_1s').val(g_quiz['1s']);
+    $('#txt_2s').val(g_quiz['2s']);
+    $('#txt_3s').val(g_quiz['3s']);
+    $('#txt_1p').val(g_quiz['1p']);
+    $('#txt_2p').val(g_quiz['2p']);
+    $('#txt_3p').val(g_quiz['3p']);
+})
+
+$("#btn_next").click(function() {
+    clear_mark();
+    $("#btn_clear").click();
+    exercise_load();
+})
+
+function query_add_box_line(list, title, data) {
+    list.append('<a class="list-group-item" target="_blank" href="http://www.conjugar.cn/examples.php?q=' + data + '"><div class="row">' + 
+            '<div class="col-xs-3">' + title + '</div>' +
+            '<div class="col-xs-9">' + data + '</div>' +
+            '</div></a>');
+}
+
+function query_add_box(boxes, rec) {
+    var container = $('<div class="container col-sm-6 col-md-4 col-lg-3"></div>').appendTo(boxes);
+    var box = $('<div class="panel panel-default"></div>').appendTo(container);
+    var head = $('<div class="panel-heading">' +
+            '<span class="label label-default">' + rec['mood'] + '</span> ' +
+            '<span class="label label-default">' + rec['tense'] + '</span>' +
+            '</div>').appendTo(box);
+
+    var body = $('<div class="panel-body"></div>').appendTo(box);
+    var list = $('<ul class="list-group"></ul>').appendTo(body);
+    query_add_box_line(list, 'yo',   rec['1s']);
+    query_add_box_line(list, 'tú',   rec['2s']);
+    query_add_box_line(list, 'Ud.',  rec['3s']);
+    query_add_box_line(list, 'nos.', rec['1p']);
+    query_add_box_line(list, 'vos.', rec['2p']);
+    query_add_box_line(list, 'Uds.', rec['3p']);
+}
+
+function query_load(data, inapp_query) {
+    var boxes = $('#div_query_ret');
+    boxes.empty();
+
+    for (i in data['conj']) {
+        query_add_box(boxes, data['conj'][i]);
+    }
+
+    var gen_div = $('#div_query_general');
+    gen_div.empty();
+    if (data['word'] == undefined) {
+        if (inapp_query) {
+            gen_div.html('Type something to search...');
+        } else {
+            gen_div.html('<p>Your vocabulary is far beyond me :-P</p>' +
+                         '<p>Try a simpler word the next time.</p>');
+        }
+
+        return;
+    }
+
+    var list = $('<ul class="list-group"></ul>').appendTo(gen_div);
+    query_add_box_line(list, 'Word',          data['word']);
+    query_add_box_line(list, 'Past',          data['past']);
+    query_add_box_line(list, 'Gerund',        data['gerund']);
+    query_add_box_line(list, 'Explanation',   data['meaning']);
+}
+
+$("#btn_query").click(function() {
+    var query_txt = deaccent($('#txt_query').val());
+    $.get("?action=query&word=" + escape(query_txt), function(data) {
+        g_data = data;
+        query_load(data, false);
+    });
+})
+
+})  // end of $(function(){})
     </script>
 </head>
 
 <body>
 
-<nav class="navbar navbar-default">
+<nav class="navbar navbar-default nav-fixed">
     <div class="navbar-header">
         <button data-target="#navbarCollapse" data-toggle="collapse" class="navbar-toggle" type="button">
             <span class="sr-only">Toggle navigation</span>
@@ -131,13 +200,13 @@ $(function() {
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
         </button>
-        <a id="btn_main" href="#" class="navbar-brand">Conjugarden</a>
+        <a id="a_main" href="#" class="navbar-brand">Conjugarden</a>
     </div>
 
     <div class="collapse navbar-collapse" id="navbarCollapse">
         <ul class="nav navbar-nav">
-            <li><a id="btn_exec" href="#">Exercise</a></li>
-            <li><a id="btn_query" href="#">Query</a></li>
+            <li><a id="a_exec" href="#">Exercise</a></li>
+            <li><a id="a_query" href="#">Query</a></li>
         </ul>
     </div>
 </nav>
@@ -145,20 +214,35 @@ $(function() {
 <div id="tab_main" class="container">
     <div class="jumbotron">
         <h1>Conjugarden</h1>
-	<br />
-	<p>Learn Spanish conjugation the <i>easy</i> way.</p>
-	<p>Originally developed for <strong>Jingyan Xie</strong>, a cute girl with passion in Spanish.</p>
-	<p>Coded with <span class="glyphicon glyphicon-heart"/> by <a href="https://github.com/hghwng">Hugh Wang</a>.</p>
-	<small>Special thanks to <a href="http://www.ghidinelli.com/free-spanish-conjugated-verb-database">Fred Jehle</a> for the comprehensive database.</small>
+        <br />
+        <p>Learn Spanish conjugation the <i>easy</i> way.</p>
+        <p>Originally developed for <strong>Jingyan Xie</strong>, a cute girl with passion in Spanish.</p>
+        <p>Coded with <span class="glyphicon glyphicon-heart"/> by <a href="https://github.com/hghwng">Hugh Wang</a>.</p>
     </div>
+	<small>Special thanks to <a href="http://www.ghidinelli.com/free-spanish-conjugated-verb-database">Fred Jehle</a> for the comprehensive database.</small>
 </div>
 
 <div id="tab_query" class="container">
-    <div class="panel panel-default">
-        <div class="panel-heading">Query</div>
-        <div class="panel-body">
-            <h1>Coming soon...</h1>
+    <div class="container">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <form class="">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="txt_query" placeholder="amar">
+                        <span class="input-group-btn">
+                            <button class="btn btn-success" type="button" id="btn_query">
+                                <span class="glyphicon glyphicon-search"/>
+                            </button>
+                        </span>
+                    </div>
+                </form>
+            </div>
+            <div id="div_query_general" class="panel-body">
+            </div>
         </div>
+    </div>
+
+    <div id="div_query_ret">
     </div>
 </div>
 
@@ -180,39 +264,39 @@ $(function() {
 
             <form class="form-horizontal">
                 <div class="form-group">
-                    <label for="txt_form_1s" class="col-sm-2 control-label">yo</label>
+                    <label for="txt_1s" class="col-sm-2 control-label">yo</label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control" id="txt_form_1s">
+                        <input type="text" class="form-control" id="txt_1s">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="txt_form_2s" class="col-sm-2 control-label">tú</label>
+                    <label for="txt_2s" class="col-sm-2 control-label">tú</label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control" id="txt_form_2s">
+                        <input type="text" class="form-control" id="txt_2s">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="txt_form_3s" class="col-sm-2 control-label">él/ella/Ud.</label>
+                    <label for="txt_3s" class="col-sm-2 control-label">él/ella/Ud.</label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control" id="txt_form_3s">
+                        <input type="text" class="form-control" id="txt_3s">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="txt_form_1p" class="col-sm-2 control-label">nosotros</label>
+                    <label for="txt_1p" class="col-sm-2 control-label">nosotros</label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control" id="txt_form_1p">
+                        <input type="text" class="form-control" id="txt_1p">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="txt_form_2p" class="col-sm-2 control-label">vosotros</label>
+                    <label for="txt_2p" class="col-sm-2 control-label">vosotros</label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control" id="txt_form_2p">
+                        <input type="text" class="form-control" id="txt_2p">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="txt_form_3p" class="col-sm-2 control-label">ellos/ellas/Uds.</label>
+                    <label for="txt_3p" class="col-sm-2 control-label">ellos/ellas/Uds.</label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control" id="txt_form_3p">
+                        <input type="text" class="form-control" id="txt_3p">
                     </div>
                 </div>
 
