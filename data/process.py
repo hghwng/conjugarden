@@ -1,6 +1,18 @@
 #!/usr/bin/env python3
 
 
+def deaccent(text):
+    import re
+    text = re.sub('[áàãâä]',    'a', text)
+    text = re.sub('[éè¨ê]',     "e", text)
+    text = re.sub('[íìïî]',     "i", text)
+    text = re.sub('[óòöôõ]',    "o", text)
+    text = re.sub('[úùüû]',     "u", text)
+    text = re.sub('[ç]',        "c", text)
+    text = re.sub('[ñ]',        "n", text)
+    return text
+
+
 def main():
     data = {}      # data information
 
@@ -8,7 +20,7 @@ def main():
     with open('database.csv', 'r') as csvfile:
         reader = csv.reader(csvfile)
         for row in reader:
-            word = row[0]
+            word = deaccent(row[0])
             if (word == "infinitive"):
                 continue
 
@@ -16,8 +28,9 @@ def main():
                 data[word] = {}
                 data[word]["conj"] = []
 
+            data[word]["word"] = row[0]
             data[word]["meaning"] = row[1]
-            data[word]["ger"] = row[13]
+            data[word]["gerund"] = row[13]
             data[word]["past"] = row[15]
 
             conj = {}
@@ -33,7 +46,7 @@ def main():
 
     import json
     open('../site/data.json', 'w').write(json.dumps(data))
-    print(data['amar'])
+    print(data['acompanar'])
 
 if __name__ == '__main__':
     main()
